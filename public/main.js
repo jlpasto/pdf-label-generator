@@ -17,8 +17,9 @@ document.addEventListener('DOMContentLoaded', function() {
       labelsContainer.querySelectorAll('input[name="labels"]').forEach(input => {
         input.required = false;
       });
-      // Optionally, set required for title if needed
+      // Set required for title and description
       document.getElementById('title').required = true;
+      document.getElementById('description').required = true;
     } else if (this.value === 'Small Labels') {
       bigLabelFields.style.display = 'none';
       smallLabelFields.style.display = '';
@@ -26,7 +27,9 @@ document.addEventListener('DOMContentLoaded', function() {
       labelsContainer.querySelectorAll('input[name="labels"]').forEach(input => {
         input.required = true;
       });
+      // Remove required from title and description
       document.getElementById('title').required = false;
+      document.getElementById('description').required = false;
     } else {
       bigLabelFields.style.display = 'none';
       smallLabelFields.style.display = 'none';
@@ -35,24 +38,114 @@ document.addEventListener('DOMContentLoaded', function() {
         input.required = false;
       });
       document.getElementById('title').required = false;
+      document.getElementById('description').required = false;
     }
     errorMsg.textContent = '';
   });
 
+  function updateRemoveButtons() {
+    const labelDivs = labelsContainer.querySelectorAll('.label-input-group');
+    // Remove all existing remove buttons
+    labelsContainer.querySelectorAll('.remove-label-btn').forEach(btn => btn.remove());
+    if (labelDivs.length > 1) {
+      // Add remove button to the last label group
+      const lastDiv = labelDivs[labelDivs.length - 1];
+      const btnContainer = lastDiv.querySelector('.remove-label-btn-container');
+      btnContainer.innerHTML = '';
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.textContent = '×';
+      removeBtn.className = 'remove-label-btn';
+      removeBtn.style.width = '28px';
+      removeBtn.style.height = '28px';
+      removeBtn.style.display = 'flex';
+      removeBtn.style.alignItems = 'center';
+      removeBtn.style.justifyContent = 'center';
+      removeBtn.addEventListener('click', function() {
+        lastDiv.remove();
+        updateRemoveButtons();
+        labelCount = labelsContainer.querySelectorAll('.label-input-group').length;
+      });
+      btnContainer.appendChild(removeBtn);
+    }
+    // Clear all other btn containers
+    for (let i = 0; i < labelDivs.length - 1; i++) {
+      const btnContainer = labelDivs[i].querySelector('.remove-label-btn-container');
+      if (btnContainer) btnContainer.innerHTML = '';
+    }
+  }
+
   addLabelBtn.addEventListener('click', function() {
-    const inputs = labelsContainer.querySelectorAll('input[name="labels"]');
-    if (inputs.length >= 12) return; // Max 12 for multi-page
+    const labelDivs = labelsContainer.querySelectorAll('.label-input-group');
+    if (labelDivs.length >= 12) return; // Max 12 for multi-page
     labelCount++;
+    const groupDiv = document.createElement('div');
+    groupDiv.className = 'label-input-group';
+    groupDiv.style.display = 'flex';
+    groupDiv.style.alignItems = 'center';
+    groupDiv.style.gap = '8px';
     const label = document.createElement('label');
     label.textContent = `Label ${labelCount}:`;
+    label.style.marginRight = '4px';
+    const inputContainer = document.createElement('div');
+    inputContainer.className = 'input-container';
+    inputContainer.style.flex = '1';
+    inputContainer.style.display = 'flex';
+    inputContainer.style.alignItems = 'center';
     const input = document.createElement('input');
     input.type = 'text';
     input.name = 'labels';
     input.maxLength = 30;
     input.required = true;
-    labelsContainer.appendChild(label);
-    labelsContainer.appendChild(input);
+    input.style.width = '100%';
+    inputContainer.appendChild(input);
+    const btnContainer = document.createElement('div');
+    btnContainer.className = 'remove-label-btn-container';
+    btnContainer.style.width = '40px';
+    btnContainer.style.display = 'flex';
+    btnContainer.style.alignItems = 'center';
+    btnContainer.style.justifyContent = 'center';
+    groupDiv.appendChild(label);
+    groupDiv.appendChild(inputContainer);
+    groupDiv.appendChild(btnContainer);
+    labelsContainer.appendChild(groupDiv);
+    updateRemoveButtons();
   });
+
+  // Refactor initial label to be in a group div with input and button container
+  (function refactorInitialLabel() {
+    const firstLabel = labelsContainer.querySelector('label');
+    const firstInput = labelsContainer.querySelector('input[name="labels"]');
+    const groupDiv = document.createElement('div');
+    groupDiv.className = 'label-input-group';
+    groupDiv.style.display = 'flex';
+    groupDiv.style.alignItems = 'center';
+    groupDiv.style.gap = '8px';
+    const inputContainer = document.createElement('div');
+    inputContainer.className = 'input-container';
+    inputContainer.style.flex = '1';
+    inputContainer.style.display = 'flex';
+    inputContainer.style.alignItems = 'center';
+    firstInput.style.width = '100%';
+    inputContainer.appendChild(firstInput);
+    const btnContainer = document.createElement('div');
+    btnContainer.className = 'remove-label-btn-container';
+    btnContainer.style.width = '40px';
+    btnContainer.style.display = 'flex';
+    btnContainer.style.alignItems = 'center';
+    btnContainer.style.justifyContent = 'center';
+    groupDiv.appendChild(firstLabel);
+    groupDiv.appendChild(inputContainer);
+    groupDiv.appendChild(btnContainer);
+    labelsContainer.appendChild(groupDiv);
+  })();
+  // Remove old label/input nodes if still present
+  Array.from(labelsContainer.childNodes).forEach(node => {
+    if (node.nodeType === 1 && !node.classList.contains('label-input-group')) {
+      node.remove();
+    }
+  });
+  updateRemoveButtons();
 
   form.addEventListener('submit', function(e) {
     e.preventDefault();
