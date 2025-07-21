@@ -59,6 +59,12 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   addBigLabelBtn.addEventListener('click', function() {
+    const sets = bigLabelsContainer.querySelectorAll('.big-label-set');
+    if (sets.length >= 30) {
+      errorMsg.textContent = 'Maximum 30 Big Labels allowed.';
+      return;
+    }
+    errorMsg.textContent = '';
     const setDiv = document.createElement('div');
     setDiv.className = 'big-label-set';
     setDiv.style.marginTop = '12px';
@@ -231,6 +237,10 @@ document.addEventListener('DOMContentLoaded', function() {
       // Collect all big label sets
       const titles = Array.from(bigLabelsContainer.querySelectorAll('input.title')).map(i => i.value.trim());
       const descriptions = Array.from(bigLabelsContainer.querySelectorAll('input.description')).map(i => i.value.trim());
+      if (titles.length > 30) {
+        errorMsg.textContent = 'Maximum 30 Big Labels allowed.';
+        return;
+      }
       if (titles.some(t => !t)) {
         errorMsg.textContent = 'All Title fields are required for Big Labels.';
         return;
