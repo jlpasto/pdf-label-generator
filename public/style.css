@@ -31,7 +31,7 @@ form select {
   border-radius: 4px;
   box-sizing: border-box;
 }
-#addLabelBtn {
+#addLabelBtn, #addBigLabelBtn {
   margin-top: 10px;
   background: #e0e0e0;
   border: none;
@@ -39,7 +39,7 @@ form select {
   padding: 7px 12px;
   cursor: pointer;
 }
-#addLabelBtn:hover {
+#addLabelBtn:hover, #addBigLabelBtn:hover {
   background: #d0d0d0;
 }
 #generateBtn {

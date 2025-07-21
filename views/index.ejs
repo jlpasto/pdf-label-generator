@@ -8,19 +8,24 @@
 </head>
 <body>
   <div class="container">
-    <h1>4x6 PDF Label Generator</h1>
+    <h1>6X4 PDF Label Generator</h1>
     <form id="labelForm">
-      <label for="templateSize">Template Size:</label>
-      <select id="templateSize" name="templateSize" required>
+      <label for="templateSize" >Template Size:</label>
+      <select id="templateSize" name="templateSize" style="margin-bottom: 10px;" required>
         <option value="">Select...</option>
         <option value="Big Labels">Big Labels</option>
         <option value="Small Labels">Small Labels</option>
       </select>
       <div id="bigLabelFields" style="display:none;">
-        <label for="title">Title:</label>
-        <input type="text" id="title" name="title" maxlength="50" required>
-        <label for="description">Short Description:</label>
-        <input type="text" id="description" name="description" maxlength="100" required>
+        <div id="bigLabelsContainer">
+          <div class="big-label-set">
+            <label for="title">Title:</label>
+            <input type="text" class="title" name="title" maxlength="50" required>
+            <label for="description">Short Description:</label>
+            <input type="text" class="description" name="description" maxlength="100" required>
+          </div>
+        </div>
+        <button type="button" id="addBigLabelBtn">+ Add Label</button>
       </div>
       <div id="smallLabelFields" style="display:none;">
         <div id="labelsContainer">

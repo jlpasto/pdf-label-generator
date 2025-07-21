@@ -9,6 +9,73 @@ document.addEventListener('DOMContentLoaded', function() {
 
   let labelCount = 1;
 
+  // --- Big Labels dynamic add/remove ---
+  const bigLabelsContainer = document.getElementById('bigLabelsContainer');
+  const addBigLabelBtn = document.getElementById('addBigLabelBtn');
+
+  function updateBigLabelRemoveButtons() {
+    const sets = bigLabelsContainer.querySelectorAll('.big-label-set');
+    sets.forEach((set, idx) => {
+      // Update group title
+      let groupTitle = set.querySelector('.big-label-group-title');
+      if (!groupTitle) {
+        groupTitle = document.createElement('div');
+        groupTitle.className = 'big-label-group-title';
+        groupTitle.style.fontWeight = 'bold';
+        groupTitle.style.marginBottom = '4px';
+        set.insertBefore(groupTitle, set.firstChild);
+      }
+      groupTitle.textContent = `Label ${idx + 1}`;
+      // Remove button logic
+      let btn = set.querySelector('.remove-big-label-btn');
+      if (btn) btn.remove();
+      btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = '×';
+      btn.className = 'remove-big-label-btn';
+      btn.style.width = '28px';
+      btn.style.height = '28px';
+      btn.style.display = 'flex';
+      btn.style.alignItems = 'center';
+      btn.style.justifyContent = 'center';
+      btn.style.marginLeft = '8px';
+      btn.addEventListener('click', function() {
+        set.remove();
+        updateBigLabelRemoveButtons();
+      });
+      set.appendChild(btn);
+      // Style the set container
+      set.style.border = '1px solid #ccc';
+      set.style.padding = '12px';
+      set.style.marginBottom = '12px';
+      set.style.borderRadius = '6px';
+      set.style.background = '#fafbfc';
+      set.style.position = 'relative';
+      // Place the button in the top right corner
+      btn.style.position = 'absolute';
+      btn.style.top = '8px';
+      btn.style.right = '8px';
+    });
+  }
+
+  addBigLabelBtn.addEventListener('click', function() {
+    const setDiv = document.createElement('div');
+    setDiv.className = 'big-label-set';
+    setDiv.style.marginTop = '12px';
+    setDiv.innerHTML = `
+      <label>Title:</label>
+      <input type="text" class="title" name="title" maxlength="50" required>
+      <label>Short Description:</label>
+      <input type="text" class="description" name="description" maxlength="100" required>
+    `;
+    bigLabelsContainer.appendChild(setDiv);
+    updateBigLabelRemoveButtons();
+  });
+
+  // Initial call
+  updateBigLabelRemoveButtons();
+
+  // --- Update required attributes for Big/Small Labels on template change ---
   templateSize.addEventListener('change', function() {
     if (this.value === 'Big Labels') {
       bigLabelFields.style.display = '';
@@ -17,9 +84,10 @@ document.addEventListener('DOMContentLoaded', function() {
       labelsContainer.querySelectorAll('input[name="labels"]').forEach(input => {
         input.required = false;
       });
-      // Set required for title and description
-      document.getElementById('title').required = true;
-      document.getElementById('description').required = true;
+      // Set required for all big label fields
+      bigLabelsContainer.querySelectorAll('input').forEach(input => {
+        input.required = true;
+      });
     } else if (this.value === 'Small Labels') {
       bigLabelFields.style.display = 'none';
       smallLabelFields.style.display = '';
@@ -27,9 +95,10 @@ document.addEventListener('DOMContentLoaded', function() {
       labelsContainer.querySelectorAll('input[name="labels"]').forEach(input => {
         input.required = true;
       });
-      // Remove required from title and description
-      document.getElementById('title').required = false;
-      document.getElementById('description').required = false;
+      // Remove required from all big label fields
+      bigLabelsContainer.querySelectorAll('input').forEach(input => {
+        input.required = false;
+      });
     } else {
       bigLabelFields.style.display = 'none';
       smallLabelFields.style.display = 'none';
@@ -37,8 +106,9 @@ document.addEventListener('DOMContentLoaded', function() {
       labelsContainer.querySelectorAll('input[name="labels"]').forEach(input => {
         input.required = false;
       });
-      document.getElementById('title').required = false;
-      document.getElementById('description').required = false;
+      bigLabelsContainer.querySelectorAll('input').forEach(input => {
+        input.required = false;
+      });
     }
     errorMsg.textContent = '';
   });
@@ -77,7 +147,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   addLabelBtn.addEventListener('click', function() {
     const labelDivs = labelsContainer.querySelectorAll('.label-input-group');
-    if (labelDivs.length >= 12) return; // Max 12 for multi-page
+    if (labelDivs.length >= 30) return; // Max 30 for multi-page
     labelCount++;
     const groupDiv = document.createElement('div');
     groupDiv.className = 'label-input-group';
@@ -147,6 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   updateRemoveButtons();
 
+  // --- Update form submission for Big Labels ---
   form.addEventListener('submit', function(e) {
     e.preventDefault();
     errorMsg.textContent = '';
@@ -157,49 +228,85 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     if (template === 'Big Labels') {
-      if (!formData.get('title')) {
-        errorMsg.textContent = 'Title is required for Big Labels.';
+      // Collect all big label sets
+      const titles = Array.from(bigLabelsContainer.querySelectorAll('input.title')).map(i => i.value.trim());
+      const descriptions = Array.from(bigLabelsContainer.querySelectorAll('input.description')).map(i => i.value.trim());
+      if (titles.some(t => !t)) {
+        errorMsg.textContent = 'All Title fields are required for Big Labels.';
         return;
       }
-    } else if (template === 'Small Labels') {
+      if (descriptions.some(d => !d)) {
+        errorMsg.textContent = 'All Description fields are required for Big Labels.';
+        return;
+      }
+      // Prepare data
+      const data = {
+        templateSize: 'Big Labels',
+        titles,
+        descriptions
+      };
+      fetch('/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('PDF generation failed');
+        return response.blob();
+      })
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'label.pdf';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(err => {
+        errorMsg.textContent = err.message;
+      });
+      return;
+    }
+    if (template === 'Small Labels') {
       const labels = formData.getAll('labels').filter(l => l.trim() !== '');
       if (labels.length === 0) {
         errorMsg.textContent = 'At least one label is required.';
         return;
       }
-      if (labels.length > 12) {
-        errorMsg.textContent = 'Maximum 12 labels allowed.';
+      if (labels.length > 30) {
+        errorMsg.textContent = 'Maximum 30 labels allowed.';
         return;
       }
+      // Prepare data
+      const data = {
+        templateSize: 'Small Labels',
+        labels
+      };
+      fetch('/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(response => {
+        if (!response.ok) throw new Error('PDF generation failed');
+        return response.blob();
+      })
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'label.pdf';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(err => {
+        errorMsg.textContent = err.message;
+      });
+      return;
     }
-    // Prepare data
-    const data = {
-      templateSize: formData.get('templateSize'),
-      title: formData.get('title'),
-      description: formData.get('description'),
-      labels: formData.getAll('labels').filter(l => l.trim() !== '')
-    };
-    fetch('/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
-    .then(response => {
-      if (!response.ok) throw new Error('PDF generation failed');
-      return response.blob();
-    })
-    .then(blob => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'label.pdf';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    })
-    .catch(err => {
-      errorMsg.textContent = err.message;
-    });
   });
 }); 
