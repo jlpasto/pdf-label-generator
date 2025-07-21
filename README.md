@@ -1,4 +1,4 @@
-# 4x6 PDF Label Generator
+# PDF Label Generator
 
 A Node.js application that provides a simple web interface for generating PDF label sheets in 4x6 paper size. Users can dynamically fill out a form and generate a PDF with either a single large label or multiple small labels, ready for download.
 
