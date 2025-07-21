@@ -1,0 +1,64 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f7f7f7;
+  margin: 0;
+  padding: 0;
+}
+.container {
+  max-width: 350px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 24px 20px 20px 20px;
+}
+h1 {
+  font-size: 1.4em;
+  margin-bottom: 18px;
+  text-align: center;
+}
+form label {
+  display: block;
+  margin-top: 12px;
+  font-weight: bold;
+}
+form input[type="text"],
+form select {
+  width: 100%;
+  padding: 7px;
+  margin-top: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+#addLabelBtn {
+  margin-top: 10px;
+  background: #e0e0e0;
+  border: none;
+  border-radius: 4px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+#addLabelBtn:hover {
+  background: #d0d0d0;
+}
+#generateBtn {
+  margin-top: 18px;
+  width: 100%;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 0;
+  font-size: 1em;
+  cursor: pointer;
+}
+#generateBtn:hover {
+  background: #0056b3;
+}
+#errorMsg {
+  color: #c00;
+  margin-top: 12px;
+  text-align: center;
+  min-height: 20px;
+} 

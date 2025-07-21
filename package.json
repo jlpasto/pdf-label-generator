@@ -1,0 +1,16 @@
+{
+  "name": "pdf-label-generator",
+  "version": "1.0.0",
+  "description": "4x6 PDF Label Generator using Node.js, Express, EJS, and PDFKit.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ejs": "^3.1.9",
+    "pdfkit": "^0.13.0",
+    "body-parser": "^1.20.2"
+  }
+} 
